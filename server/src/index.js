@@ -14,6 +14,8 @@ const {
   sendAccessToken
 } = require('./tokens.js');
 
+const {isAuth} = require('./auth.js');
+
 const server = express();
 
 // Use middleware
@@ -101,5 +103,57 @@ server.post('/login', async(req, res) => {
 });
 
 // 3. Logout a user
+server.post('/logout', (_req, res) => {
+  res.clearCookie('refreshtoken', { path: '/refresh_token' });
+  // Logic here for also remove refreshtoken from db
+
+  return res.send({
+    message: 'Logged out',
+  });
+});
+
 // 4. Setup a protected route
+
+server.post('/protected', async (req, res) => {
+  try {
+    const userId = isAuth(req);
+    if (userId !== null) {
+      res.send({
+        data: 'This is protected data.',
+      });
+    }
+  } catch (err) {
+    res.send({
+      error: `${err.message}`,
+    });
+  }
+});
+
 // 5. Get a new accesstoken with a refresh token
+server.post('/refresh_token', (req, res) => {
+  const token = req.cookies.refreshtoken;
+  // If we don't have a token in our request
+  if (!token) return res.send({ accesstoken: '' });
+  // We have a token, let's verify it!
+  let payload = null;
+  try {
+    payload = verify(token, process.env.REFRESH_TOKEN_SECRET);
+  } catch (err) {
+    return res.send({ accesstoken: '' });
+  }
+  // token is valid, check if user exist
+  const user = fakeDB.find(user => user.id === payload.userId);
+  if (!user) return res.send({ accesstoken: '' });
+  // user exist, check if refreshtoken exist on user
+  if (user.refreshtoken !== token)
+    return res.send({ accesstoken: '' });
+  // token exist, create new Refresh- and accesstoken
+  const accesstoken = createAccessToken(user.id);
+  const refreshtoken = createRefreshToken(user.id);
+  // update refreshtoken on user in db
+  // Could have different versions instead!
+  user.refreshtoken = refreshtoken;
+  // All good to go, send new refreshtoken and accesstoken
+  sendRefreshToken(res, refreshtoken);
+  return res.send({ accesstoken });
+});
