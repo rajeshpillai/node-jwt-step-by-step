@@ -38,7 +38,9 @@ server.post('/register', async(req, res) => {
 
       let user = fakeDB.find(user => user.email === email);
       console.log(user);
+
       if (user) throw new Error('User already exist');
+      
       const hashPassword = await hash(password,10);
       fakeDB.push({
         id: fakeDB.lenght,
@@ -60,6 +62,10 @@ server.post('/register', async(req, res) => {
 })
 
 // 2. Login a user
+server.post('/login', async(req, res) => {
+  
+});
+
 // 3. Logout a user
 // 4. Setup a protected route
 // 5. Get a new accesstoken with a refresh token
