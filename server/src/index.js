@@ -7,6 +7,12 @@ const {verify} = require('jsonwebtoken');
 const {hash, compare} = require('bcryptjs');
 const {fakeDB} = require('../db/fake-db.js');
 
+const {
+  createAccessToken,
+  createRefreshToken,
+  sendRefreshToken,
+  sendAccessToken
+} = require('./tokens.js');
 
 const server = express();
 
@@ -42,8 +48,9 @@ server.post('/register', async(req, res) => {
       if (user) throw new Error('User already exist');
       
       const hashPassword = await hash(password,10);
+      console.log(hashPassword);
       fakeDB.push({
-        id: fakeDB.lenght,
+        id: fakeDB.length,
         email, 
         password: hashPassword
       });
@@ -63,7 +70,34 @@ server.post('/register', async(req, res) => {
 
 // 2. Login a user
 server.post('/login', async(req, res) => {
-  
+  const { email, password } = req.body;
+
+  try {
+    // 1. Find user in array. If not exist send error
+    const user = fakeDB.find(user => user.email === email);
+    if (!user) throw new Error('User does not exist');
+    // 2. Compare crypted password and see if it checks out. Send error if not
+    const valid = await compare(password, user.password);
+
+    const hashPassword = await hash(password,10);
+    console.log(hashPassword);
+
+    if (!valid) throw new Error('Password not correct');
+    // 3. Create Refresh- and Accesstoken
+    const accesstoken = createAccessToken(user.id);
+    const refreshtoken = createRefreshToken(user.id);
+    // 4. Store Refreshtoken with user in "db"
+    // Could also use different version numbers instead.
+    // Then just increase the version number on the revoke endpoint
+    user.refreshtoken = refreshtoken;
+    // 5. Send token. Refreshtoken as a cookie and accesstoken as a regular response
+    sendRefreshToken(res, refreshtoken);
+    sendAccessToken(res, req, accesstoken);
+  } catch (err) {
+    res.send({
+      error: `${err.message}`,
+    });
+  }
 });
 
 // 3. Logout a user

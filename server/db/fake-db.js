@@ -2,6 +2,6 @@ exports.fakeDB = [
   {
     id: 1,
     email: 'abc@test.com',
-    password: '$2a$10$nLCFR7WvrO2E2/lm36BEI.xlu6EegTVtwdTkXC59qcSuMM8UtzyI'
+    password: '$2a$10$Ufu/lnPtt.tmjaakDjdP6uC7FbtSGBUgmVTzXAUYAKl/ia2Cd/vfm'
   }
 ]
