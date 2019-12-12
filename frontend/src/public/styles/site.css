@@ -1,0 +1,11 @@
+*{
+
+}
+.nav-bar ul {
+  display: flex;
+  list-style-type: none;
+  padding: 10px;
+}
+.nav-bar ul>li {
+  margin: 5px;
+}
