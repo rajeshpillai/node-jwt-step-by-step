@@ -50,10 +50,29 @@
     }
   };
 
+  var logoutUI = `
+    <a id="logout" href='#'>Logout</a>
+  `
+
   window.login = async function (parent) {
-    parent.innerHTML = html;
+    let h = this.window.accesstoken ? logoutUI : html;
+    parent.innerHTML = h;
     const form = document.getElementById('login');
-    form.addEventListener('submit', onLogin);
+    if (form) {
+      form.addEventListener('submit', onLogin);
+    }
+    const logout = document.querySelector("#logout");
+    if (!logout) return;
+    logout.addEventListener('click', async () => {
+      await fetch('http://localhost:4000/logout', {
+        method: 'POST',
+        credentials: 'include', // Needed to include the cookie
+      });
+      // Clear user from context
+      this.window.accesstoken = null;
+      // Navigate back to startpage
+      this.window.navigate("home");
+    });
   }
 
 }())

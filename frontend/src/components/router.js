@@ -15,4 +15,18 @@ const navigate = (link) => {
   window[link](contentRoot);
 }
 
+async function checkRefreshToken() {
+  const result = await (
+    await fetch('http://localhost:4000/refresh_token', {
+      method: 'POST',
+      credentials: 'include', // Needed to include the cookie
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })).json();
+  window.accesstoken = result.accesstoken;
+}
+
 window.navigate = navigate;
+
+checkRefreshToken();
