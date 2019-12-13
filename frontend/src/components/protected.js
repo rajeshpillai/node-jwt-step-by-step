@@ -2,6 +2,7 @@
   let html = '<h1>Protected data </h1>';
 
   window.protected = async function (parent) {
+    if (!window.accesstoken) window.navigate('login'); return;
     const result = await (await fetch('http://localhost:4000/protected', {
       method: 'POST',
       headers: {

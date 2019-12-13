@@ -14,3 +14,5 @@ for (var i = 0; i < links.length; i++) {
 const navigate = (link) => {
   window[link](contentRoot);
 }
+
+window.navigate = navigate;
