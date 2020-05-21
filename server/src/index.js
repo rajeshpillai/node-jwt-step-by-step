@@ -38,6 +38,11 @@ server.listen(process.env.PORT, ()=> {
   console.log(`server listening on port ${process.env.PORT}`);
 });
 
+// Test api for heartbeat
+server.get("/ping", async(req, res) => {
+  res.send("PING OK...");
+});
+
 // STEPS
 // 1. Register a user
 server.post('/register', async(req, res) => {
