@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const express = require('express');
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const {verify} = require('jsonwebtoken');
 const {hash, compare} = require('bcryptjs');
@@ -19,7 +19,8 @@ const {isAuth} = require('./auth.js');
 const server = express();
 
 // Use middleware
-server.use(cookieParser());
+// server.use(cookieParser());
+
 server.use(
   cors({
     origin: 'http://localhost:3000',
