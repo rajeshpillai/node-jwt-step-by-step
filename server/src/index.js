@@ -87,16 +87,17 @@ server.post('/login', async(req, res) => {
     // 2. Compare crypted password and see if it checks out. Send error if not
     const valid = await compare(password, user.password);
 
-    const hashPassword = await hash(password,10);
-    console.log(hashPassword);
 
     if (!valid) throw new Error('Password not correct');
+
     // 3. Create Refresh- and Accesstoken
     const accesstoken = createAccessToken(user.id);
     const refreshtoken = createRefreshToken(user.id);
+
     // 4. Store Refreshtoken with user in "db"
     // Could also use different version numbers instead.
     // Then just increase the version number on the revoke endpoint
+
     user.refreshtoken = refreshtoken;
     // 5. Send token. Refreshtoken as a cookie and accesstoken as a regular response
     sendRefreshToken(res, refreshtoken);
@@ -137,28 +138,42 @@ server.post('/protected', async (req, res) => {
 
 // 5. Get a new accesstoken with a refresh token
 server.post('/refresh_token', (req, res) => {
+  // Grab the refreshToken from the cookie (in or case)
+  // In case you are passing it in header use the approprite code.
   const token = req.cookies.refreshtoken;
-  // If we don't have a token in our request
+
+  // If we don't have a token in our request respond by sending empty accesstoken
   if (!token) return res.send({ accesstoken: '' });
-  // We have a token, let's verify it!
+  
+  // We have a token, so let's verify it!
   let payload = null;
   try {
     payload = verify(token, process.env.REFRESH_TOKEN_SECRET);
   } catch (err) {
+    // If any error in verification, like incorrect token or of the token is 
+    // tamppered then send an empty accesstoken
     return res.send({ accesstoken: '' });
   }
-  // token is valid, check if user exist
+
+  // If token is valid, check if user exist in or database/data sstore
   const user = fakeDB.find(user => user.id === payload.userId);
+  
+  // If user not found send empty access token
   if (!user) return res.send({ accesstoken: '' });
-  // user exist, check if refreshtoken exist on user
+  
+  // User exist, check if refreshtoken exist on user.  This is required, as we store 
+  // refreshtoken in our store we have to ensure both matches.
   if (user.refreshtoken !== token)
     return res.send({ accesstoken: '' });
-  // token exist, create new Refresh- and accesstoken
+
+  // If all OK create new Refresh- and accesstoken
   const accesstoken = createAccessToken(user.id);
   const refreshtoken = createRefreshToken(user.id);
-  // update refreshtoken on user in db
-  // Could have different versions instead!
+  
+  // Update refreshtoken on user in db
+  // You can use your DB udpate logic here
   user.refreshtoken = refreshtoken;
+ 
   // All good to go, send new refreshtoken and accesstoken
   sendRefreshToken(res, refreshtoken);
   return res.send({ accesstoken });
