@@ -2,8 +2,9 @@
 Backend
 
 # .env
-First ... create a .env file to store your secrets and port. 
+First. create a .env file in the "server" folder to store your secrets and port.   This file is not to be comitted in git(or other source control system)
 
+## Add the below key/value pairs
 ACCESS_TOKEN_SECRET=nodejwttoken
 REFRESH_TOKEN_SECRET=notsosecret
 PORT=4000
